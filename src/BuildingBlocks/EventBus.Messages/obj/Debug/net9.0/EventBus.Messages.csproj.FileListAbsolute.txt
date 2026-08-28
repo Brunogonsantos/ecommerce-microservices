@@ -1,0 +1,12 @@
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\bin\Debug\net9.0\EventBus.Messages.deps.json
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\bin\Debug\net9.0\EventBus.Messages.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\bin\Debug\net9.0\EventBus.Messages.pdb
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.AssemblyInfoInputs.cache
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.AssemblyInfo.cs
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.csproj.CoreCompileInputs.cache
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.sourcelink.json
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\refint\EventBus.Messages.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\EventBus.Messages.pdb
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\BuildingBlocks\EventBus.Messages\obj\Debug\net9.0\ref\EventBus.Messages.dll

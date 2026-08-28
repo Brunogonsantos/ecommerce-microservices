@@ -2,10 +2,10 @@
   "version": 3,
   "targets": {
     "net9.0": {
-      "MassTransit/9.2.1": {
+      "MassTransit/8.3.6": {
         "type": "package",
         "dependencies": {
-          "MassTransit.Abstractions": "9.2.1",
+          "MassTransit.Abstractions": "8.3.6",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
           "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
           "Microsoft.Extensions.Hosting.Abstractions": "9.0.0",
@@ -23,7 +23,7 @@
           }
         }
       },
-      "MassTransit.Abstractions/9.2.1": {
+      "MassTransit.Abstractions/8.3.6": {
         "type": "package",
         "compile": {
           "lib/net9.0/MassTransit.Abstractions.dll": {
@@ -36,32 +36,24 @@
           }
         }
       },
-      "MassTransit.AspNetCore/9.2.1": {
+      "MassTransit.RabbitMQ/8.3.6": {
         "type": "package",
         "dependencies": {
-          "MassTransit": "9.2.1",
-          "MassTransit.Abstractions": "9.2.1",
-          "Microsoft.AspNetCore.OpenApi": "9.0.0",
-          "Microsoft.OpenApi": "2.11.0"
+          "MassTransit": "8.3.6",
+          "RabbitMQ.Client": "7.0.0"
         },
         "compile": {
-          "lib/net9.0/MassTransit.AspNetCore.dll": {
+          "lib/net9.0/MassTransit.RabbitMqTransport.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net9.0/MassTransit.AspNetCore.dll": {
+          "lib/net9.0/MassTransit.RabbitMqTransport.dll": {
             "related": ".xml"
           }
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ],
-        "build": {
-          "build/MassTransit.AspNetCore.targets": {}
         }
       },
-      "Microsoft.AspNetCore.OpenApi/9.0.18": {
+      "Microsoft.AspNetCore.OpenApi/9.0.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.OpenApi": "1.6.17"
@@ -303,18 +295,15 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.OpenApi/2.11.0": {
+      "Microsoft.OpenApi/1.6.17": {
         "type": "package",
-        "dependencies": {
-          "System.Text.Json": "8.0.5"
-        },
         "compile": {
-          "lib/net8.0/Microsoft.OpenApi.dll": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
             "related": ".pdb;.xml"
           }
         },
         "runtime": {
-          "lib/net8.0/Microsoft.OpenApi.dll": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
             "related": ".pdb;.xml"
           }
         }
@@ -331,6 +320,23 @@
         },
         "runtime": {
           "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "RabbitMQ.Client/7.0.0": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "8.0.0",
+          "System.Threading.RateLimiting": "8.0.0"
+        },
+        "compile": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
             "related": ".xml"
           }
         }
@@ -446,6 +452,22 @@
           "buildTransitive/net8.0/System.Text.Json.targets": {}
         }
       },
+      "System.Threading.RateLimiting/8.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.Threading.RateLimiting.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.Threading.RateLimiting.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
       "EventBus.Messages/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -459,16 +481,14 @@
     }
   },
   "libraries": {
-    "MassTransit/9.2.1": {
-      "sha512": "99SFdhxyAxv5YhlXIwwpKjJYKy+cLMS+nvU5/fulUZB5P1WhXyUPjpu9zmxM+QY1TRnQkT3lyGXJkEPkb4Z3pw==",
+    "MassTransit/8.3.6": {
+      "sha512": "iQQ02dUJuWlpNai3eDN7WmnstvmB2LAD8YN1i8OFT5BaNpGYYg3v0US3S6f1Zz7us+NnGHm6csg25Ak3z0H7Xg==",
       "type": "package",
-      "path": "masstransit/9.2.1",
+      "path": "masstransit/8.3.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "NuGet.README.md",
-        "lib/net10.0/MassTransit.dll",
-        "lib/net10.0/MassTransit.xml",
         "lib/net472/MassTransit.dll",
         "lib/net472/MassTransit.xml",
         "lib/net8.0/MassTransit.dll",
@@ -477,21 +497,19 @@
         "lib/net9.0/MassTransit.xml",
         "lib/netstandard2.0/MassTransit.dll",
         "lib/netstandard2.0/MassTransit.xml",
-        "masstransit.9.2.1.nupkg.sha512",
+        "masstransit.8.3.6.nupkg.sha512",
         "masstransit.nuspec",
         "mt-logo-small.png"
       ]
     },
-    "MassTransit.Abstractions/9.2.1": {
-      "sha512": "R5+43Hs4O4PYzbwkgZnEO1a66Smdk1y4zjaUMKVgXPnBJSZnT3IuCATM6w4fPDfEezT2SEezfFZ09cZVpLT7eg==",
+    "MassTransit.Abstractions/8.3.6": {
+      "sha512": "F3R3EFPvUvpsiebnijmpvZ4IhSEcqkEJdrhlFuTOjzIUnMRYBgki/oDfFWj57Ki4b9yq0nilt4Q5bk11pC4ygg==",
       "type": "package",
-      "path": "masstransit.abstractions/9.2.1",
+      "path": "masstransit.abstractions/8.3.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "NuGet.README.md",
-        "lib/net10.0/MassTransit.Abstractions.dll",
-        "lib/net10.0/MassTransit.Abstractions.xml",
         "lib/net472/MassTransit.Abstractions.dll",
         "lib/net472/MassTransit.Abstractions.xml",
         "lib/net8.0/MassTransit.Abstractions.dll",
@@ -500,52 +518,36 @@
         "lib/net9.0/MassTransit.Abstractions.xml",
         "lib/netstandard2.0/MassTransit.Abstractions.dll",
         "lib/netstandard2.0/MassTransit.Abstractions.xml",
-        "masstransit.abstractions.9.2.1.nupkg.sha512",
+        "masstransit.abstractions.8.3.6.nupkg.sha512",
         "masstransit.abstractions.nuspec",
         "mt-logo-small.png"
       ]
     },
-    "MassTransit.AspNetCore/9.2.1": {
-      "sha512": "Izvl6vKKAWqgTwnwPfB6+SGxbH4Edmo7bWJUesorPbxsvk19R9Fz+cuhpX9VxWSieV9G5CbzrV9lrOjGAxkwAA==",
+    "MassTransit.RabbitMQ/8.3.6": {
+      "sha512": "gR67/f8reudNVUf0yDdUBuDLBFjDdqCSF8K3XaIlpHSRmmCUTBVPVrt0h65/Zty00okBHzcbUX32bLZeQL51sw==",
       "type": "package",
-      "path": "masstransit.aspnetcore/9.2.1",
+      "path": "masstransit.rabbitmq/8.3.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "NuGet.README.md",
-        "build/MassTransit.AspNetCore.targets",
-        "lib/net10.0/MassTransit.AspNetCore.dll",
-        "lib/net10.0/MassTransit.AspNetCore.xml",
-        "lib/net8.0/MassTransit.AspNetCore.dll",
-        "lib/net8.0/MassTransit.AspNetCore.xml",
-        "lib/net9.0/MassTransit.AspNetCore.dll",
-        "lib/net9.0/MassTransit.AspNetCore.xml",
-        "masstransit-wwwroot/assets/Flow-vAVUM0mI.js",
-        "masstransit-wwwroot/assets/Operations-ClZfc7GP.js",
-        "masstransit-wwwroot/assets/charts-Bn9R8ZeZ.js",
-        "masstransit-wwwroot/assets/date-ChQBegGE.js",
-        "masstransit-wwwroot/assets/flow-BcZvU2nV.js",
-        "masstransit-wwwroot/assets/flow-DLioOiRN.css",
-        "masstransit-wwwroot/assets/index-D5B9FUgK.css",
-        "masstransit-wwwroot/assets/index-DQgUPbzO.js",
-        "masstransit-wwwroot/assets/radix-Dv6CYk5r.js",
-        "masstransit-wwwroot/assets/react-core-aEPK-Fh9.js",
-        "masstransit-wwwroot/assets/rolldown-runtime-kjsH4l9N.js",
-        "masstransit-wwwroot/assets/tanstack-CuKXZy5Z.js",
-        "masstransit-wwwroot/assets/ui-utils-D5hEP2by.js",
-        "masstransit-wwwroot/assets/useEventStream-D3VQSDOb.js",
-        "masstransit-wwwroot/assets/vendor-C6DKL8RC.js",
-        "masstransit-wwwroot/favicon.svg",
-        "masstransit-wwwroot/index.html",
-        "masstransit.aspnetcore.9.2.1.nupkg.sha512",
-        "masstransit.aspnetcore.nuspec",
+        "lib/net472/MassTransit.RabbitMqTransport.dll",
+        "lib/net472/MassTransit.RabbitMqTransport.xml",
+        "lib/net8.0/MassTransit.RabbitMqTransport.dll",
+        "lib/net8.0/MassTransit.RabbitMqTransport.xml",
+        "lib/net9.0/MassTransit.RabbitMqTransport.dll",
+        "lib/net9.0/MassTransit.RabbitMqTransport.xml",
+        "lib/netstandard2.0/MassTransit.RabbitMqTransport.dll",
+        "lib/netstandard2.0/MassTransit.RabbitMqTransport.xml",
+        "masstransit.rabbitmq.8.3.6.nupkg.sha512",
+        "masstransit.rabbitmq.nuspec",
         "mt-logo-small.png"
       ]
     },
-    "Microsoft.AspNetCore.OpenApi/9.0.18": {
-      "sha512": "zL+MUFNrqVtnoYa/21c8Nq67Xcj569NLhjah8nhKubxA8s1zkhjhA+CzXIBwpjHWYKZ4JNH029S2RJvBotsQqQ==",
+    "Microsoft.AspNetCore.OpenApi/9.0.0": {
+      "sha512": "FqUK5j1EOPNuFT7IafltZQ3cakqhSwVzH5ZW1MhZDe4pPXs9sJ2M5jom1Omsu+mwF2tNKKlRAzLRHQTZzbd+6Q==",
       "type": "package",
-      "path": "microsoft.aspnetcore.openapi/9.0.18",
+      "path": "microsoft.aspnetcore.openapi/9.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -554,7 +556,7 @@
         "THIRD-PARTY-NOTICES.TXT",
         "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll",
         "lib/net9.0/Microsoft.AspNetCore.OpenApi.xml",
-        "microsoft.aspnetcore.openapi.9.0.18.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
         "microsoft.aspnetcore.openapi.nuspec"
       ]
     },
@@ -936,21 +938,18 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.OpenApi/2.11.0": {
-      "sha512": "/ignjfdeKT2SGLIR7QEv19KnI0rvoxRG/TYDOZdK9EsWLjKK9IK8i1Mo5NRm9PRV3i64DzlTqnIflWvoyfljLg==",
+    "Microsoft.OpenApi/1.6.17": {
+      "sha512": "Le+kehlmrlQfuDFUt1zZ2dVwrhFQtKREdKBo+rexOwaCoYP0/qpgT9tLxCsZjsgR5Itk1UKPcbgO+FyaNid/bA==",
       "type": "package",
-      "path": "microsoft.openapi/2.11.0",
+      "path": "microsoft.openapi/1.6.17",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "README.md",
-        "lib/net8.0/Microsoft.OpenApi.dll",
-        "lib/net8.0/Microsoft.OpenApi.pdb",
-        "lib/net8.0/Microsoft.OpenApi.xml",
         "lib/netstandard2.0/Microsoft.OpenApi.dll",
         "lib/netstandard2.0/Microsoft.OpenApi.pdb",
         "lib/netstandard2.0/Microsoft.OpenApi.xml",
-        "microsoft.openapi.2.11.0.nupkg.sha512",
+        "microsoft.openapi.1.6.17.nupkg.sha512",
         "microsoft.openapi.nuspec"
       ]
     },
@@ -975,6 +974,23 @@
         "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
         "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
         "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
+    "RabbitMQ.Client/7.0.0": {
+      "sha512": "8YJz22mOSMtkbIVuVSz2HbJwbpKwRoXQ1uqbczDUt1w1Ds8dxFs6dkV/oZ8AlTmkErZjtQelHv+oBu52ud00WA==",
+      "type": "package",
+      "path": "rabbitmq.client/7.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net8.0/RabbitMQ.Client.dll",
+        "lib/net8.0/RabbitMQ.Client.xml",
+        "lib/netstandard2.0/RabbitMQ.Client.dll",
+        "lib/netstandard2.0/RabbitMQ.Client.xml",
+        "rabbitmq.client.7.0.0.nupkg.sha512",
+        "rabbitmq.client.nuspec"
       ]
     },
     "Scalar.AspNetCore/2.17.1": {
@@ -1183,6 +1199,35 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "System.Threading.RateLimiting/8.0.0": {
+      "sha512": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q==",
+      "type": "package",
+      "path": "system.threading.ratelimiting/8.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Threading.RateLimiting.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net6.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Threading.RateLimiting.targets",
+        "lib/net462/System.Threading.RateLimiting.dll",
+        "lib/net462/System.Threading.RateLimiting.xml",
+        "lib/net6.0/System.Threading.RateLimiting.dll",
+        "lib/net6.0/System.Threading.RateLimiting.xml",
+        "lib/net7.0/System.Threading.RateLimiting.dll",
+        "lib/net7.0/System.Threading.RateLimiting.xml",
+        "lib/net8.0/System.Threading.RateLimiting.dll",
+        "lib/net8.0/System.Threading.RateLimiting.xml",
+        "lib/netstandard2.0/System.Threading.RateLimiting.dll",
+        "lib/netstandard2.0/System.Threading.RateLimiting.xml",
+        "system.threading.ratelimiting.8.0.0.nupkg.sha512",
+        "system.threading.ratelimiting.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "EventBus.Messages/1.0.0": {
       "type": "project",
       "path": "../../BuildingBlocks/EventBus.Messages/EventBus.Messages.csproj",
@@ -1192,9 +1237,11 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "EventBus.Messages >= 1.0.0",
-      "MassTransit.AspNetCore >= 9.2.1",
-      "Microsoft.AspNetCore.OpenApi >= 9.0.18",
+      "MassTransit >= 8.3.6",
+      "MassTransit.RabbitMQ >= 8.3.6",
+      "Microsoft.AspNetCore.OpenApi >= 9.0.0",
       "Microsoft.Extensions.Caching.StackExchangeRedis >= 10.0.11",
+      "Microsoft.OpenApi >= 1.6.17",
       "Scalar.AspNetCore >= 2.17.1",
       "System.Text.Json >= 10.0.11"
     ]
@@ -1246,17 +1293,28 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
-          "MassTransit.AspNetCore": {
+          "MassTransit": {
             "target": "Package",
-            "version": "[9.2.1, )"
+            "version": "[8.3.6, )"
+          },
+          "MassTransit.RabbitMQ": {
+            "target": "Package",
+            "version": "[8.3.6, )"
           },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
-            "version": "[9.0.18, )"
+            "version": "[9.0.0, )"
           },
           "Microsoft.Extensions.Caching.StackExchangeRedis": {
             "target": "Package",
             "version": "[10.0.11, )"
+          },
+          "Microsoft.OpenApi": {
+            "target": "Package",
+            "version": "[1.6.17, )",
+            "noWarn": [
+              "NU1605"
+            ]
           },
           "Scalar.AspNetCore": {
             "target": "Package",

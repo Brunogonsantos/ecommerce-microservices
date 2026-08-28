@@ -107,17 +107,28 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "MassTransit.AspNetCore": {
+            "MassTransit": {
               "target": "Package",
-              "version": "[9.2.1, )"
+              "version": "[8.3.6, )"
+            },
+            "MassTransit.RabbitMQ": {
+              "target": "Package",
+              "version": "[8.3.6, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[9.0.18, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Caching.StackExchangeRedis": {
               "target": "Package",
               "version": "[10.0.11, )"
+            },
+            "Microsoft.OpenApi": {
+              "target": "Package",
+              "version": "[1.6.17, )",
+              "noWarn": [
+                "NU1605"
+              ]
             },
             "Scalar.AspNetCore": {
               "target": "Package",
