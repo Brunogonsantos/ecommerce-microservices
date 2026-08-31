@@ -306,3 +306,4 @@ C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\C
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Catalog.API\obj\Debug\net9.0\Catalog.API.pdb
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Catalog.API\obj\Debug\net9.0\Catalog.API.genruntimeconfig.cache
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Catalog.API\obj\Debug\net9.0\ref\Catalog.API.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Catalog.API\obj\Debug\net9.0\Catalog.API.sourcelink.json
