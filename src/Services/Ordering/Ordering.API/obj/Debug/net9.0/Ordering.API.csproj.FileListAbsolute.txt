@@ -28,6 +28,7 @@ C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\O
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.SqlServer.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.Extensions.Http.Polly.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.Identity.Client.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
@@ -40,6 +41,8 @@ C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\O
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.SqlServer.Server.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Mono.TextTemplating.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Polly.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\Polly.Extensions.Http.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\RabbitMQ.Client.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\System.ClientModel.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Ordering\Ordering.API\bin\Debug\net9.0\System.CodeDom.dll

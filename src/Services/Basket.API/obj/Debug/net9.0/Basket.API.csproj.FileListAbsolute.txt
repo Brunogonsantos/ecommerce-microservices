@@ -13,11 +13,14 @@ C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\B
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Caching.StackExchangeRedis.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Http.Polly.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Microsoft.OpenApi.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Polly.dll
+C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Polly.Extensions.Http.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\RabbitMQ.Client.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\Scalar.AspNetCore.dll
 C:\Users\bruno\OneDrive\Área de Trabalho\ecommerce-microservices\src\Services\Basket.API\bin\Debug\net9.0\StackExchange.Redis.dll
