@@ -1,0 +1,43 @@
+## .NET / Visual Studio / Rider
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+*.dbmdl
+*.pdb
+ 
+## Publicação / build
+publish/
+PublishProfiles/
+*.publishsettings
+ 
+## Rider/VSCode
+.vscode/
+*.swp
+ 
+## Logs e temporários
+*.log
+*.tmp
+logs/
+ 
+## Segredos locais (nunca versionar)
+appsettings.*.local.json
+*.env
+.env
+ 
+## Docker
+docker-compose.override.yml
+ 
+## SQL Server / dados locais montados por volume
+mssql-data/
+redis-data/
+ 
+## Cobertura de testes
+coverage/
+*.trx
+TestResults/
