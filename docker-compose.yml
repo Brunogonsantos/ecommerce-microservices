@@ -1,12 +1,21 @@
-﻿version: '3.4'
+﻿services:
 
-services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
+  # ---------- Infraestrutura ----------
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Password123
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    # Nota: Catalog.API e Ordering.API usam essa MESMA instância de SQL Server,
+    # mas com bancos lógicos separados (CatalogDb / OrderingDb). Isso é
+    # aceitável para ambiente local/demo; em produção, cada serviço deveria
+    # ter sua própria instância física para isolamento real de falhas.
 
   redis:
     image: redis:alpine
@@ -14,17 +23,29 @@ services:
     ports:
       - "6379:6379"
 
-  catalogdb:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: catalogdb
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Password123
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
     ports:
-      - "1433:1433"
+      - "5672:5672"
+      - "15672:15672"
 
-  # --- Adicione os Microsserviços abaixo ---
-  basket.api:
+  # ---------- Microsserviços ----------
+
+  catalog-api:
+    build:
+      context: .
+      dockerfile: src/Services/Catalog.API/Dockerfile
+    container_name: catalog.api
+    ports:
+      - "5070:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__CatalogConn=Server=sqlserver,1433;Database=CatalogDb;User=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+    depends_on:
+      - sqlserver
+
+  basket-api:
     build:
       context: .
       dockerfile: src/Services/Basket.API/Dockerfile
@@ -32,21 +53,47 @@ services:
     ports:
       - "5034:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Redis=redis:6379
       - EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672
     depends_on:
       - redis
       - rabbitmq
 
-  ordering.api:
+  ordering-api:
     build:
       context: .
-      dockerfile: src/Services/Ordering.API/Dockerfile
+      dockerfile: src/Services/Ordering/Ordering.API/Dockerfile
     container_name: ordering.api
     ports:
       - "5114:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__OrderingConn=Server=sqlserver,1433;Database=OrderingDb;User=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
       - EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672
     depends_on:
+      - sqlserver
       - rabbitmq
-      - catalogdb
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: src/Services/Gateway/ApiGateway/Dockerfile
+    container_name: apigateway
+    ports:
+      - "5094:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Sobrescreve os destinos do YARP (que no appsettings.json apontam
+      # para localhost, o que só funciona fora de containers) para os
+      # nomes dos serviços dentro da rede do Docker Compose.
+      - ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address=http://catalog-api:8080
+      - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basket-api:8080
+      - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://ordering-api:8080
+    depends_on:
+      - catalog-api
+      - basket-api
+      - ordering-api
+
+volumes:
+  mssql-data:
