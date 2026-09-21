@@ -60,6 +60,7 @@ namespace Basket.API.Controllers
             // 2. Cria o evento e mapeia os dados do checkout com o total do carrinho
             var eventMessage = new BasketCheckoutEvent
             {
+                CheckoutId = Guid.NewGuid(),
                 UserName = basketCheckout.UserName,
                 TotalPrice = basket.TotalPrice,
                 FirstName = basketCheckout.FirstName,

@@ -19,6 +19,13 @@ namespace Ordering.Infrastructure.Data
             modelBuilder.Entity<Order>()
                 .Property(p => p.TotalPrice)
                 .HasColumnType("decimal(18,2)");
+
+            // Garante, a nível de banco, que a mesma tentativa de checkout (mesmo
+            // CheckoutId) nunca gere dois pedidos — mesmo sob reentrega concorrente
+            // da mensagem pelo RabbitMQ/MassTransit.
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.CheckoutId)
+                .IsUnique();
         }
     }
 }

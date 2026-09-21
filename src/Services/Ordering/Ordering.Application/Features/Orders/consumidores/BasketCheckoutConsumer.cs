@@ -21,9 +21,22 @@ namespace Ordering.Application.Features.Orders.Consumers
         {
             var message = context.Message;
 
+            // Idempotência: se essa mensagem já foi processada antes (reentrega do
+            // RabbitMQ/MassTransit após um erro transitório, por exemplo), o pedido
+            // com esse CheckoutId já existe. Não cria de novo — só loga e retorna.
+            var existingOrder = await _orderRepository.GetByCheckoutId(message.CheckoutId);
+            if (existingOrder is not null)
+            {
+                _logger.LogWarning(
+                    "Mensagem duplicada detectada para CheckoutId {CheckoutId} (usuário {UserName}). Pedido já existe com Id {OrderId}. Ignorando.",
+                    message.CheckoutId, message.UserName, existingOrder.Id);
+                return;
+            }
+
             // Mapeia o evento recebido para a entidade de Domínio Order
             var order = new Order
             {
+                CheckoutId = message.CheckoutId,
                 UserName = message.UserName,
                 TotalPrice = message.TotalPrice,
                 FirstName = message.FirstName,
@@ -36,7 +49,7 @@ namespace Ordering.Application.Features.Orders.Consumers
             };
 
             await _orderRepository.CreateOrder(order);
-            _logger.LogInformation("Pedido criado com sucesso para o usuário: {userName}", order.UserName);
+            _logger.LogInformation("Pedido criado com sucesso para o usuário: {userName} (CheckoutId: {CheckoutId})", order.UserName, order.CheckoutId);
         }
     }
 }
