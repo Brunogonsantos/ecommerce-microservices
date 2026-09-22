@@ -1,4 +1,5 @@
 using Basket.API.Repositories;
+using Basket.API.Services;
 using MassTransit;
 using Polly;
 using Polly.Extensions.Http;
@@ -36,7 +37,8 @@ var circuitBreakerPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
 
-// Exemplo de aplicação das políticas em um HttpClient (Ajuste as classes conforme seu projeto)
+// Aplica retry + circuit breaker ao ICatalogService: toda chamada do Basket.API
+// ao Catalog.API (validar produto/preço no carrinho) passa por essas políticas.
 builder.Services.AddHttpClient<ICatalogService, CatalogService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:CatalogUrl"] ?? "http://localhost:5070");
@@ -60,11 +62,3 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-
-
-// --- Interfaces e Classes de Exemplo (Remova ou mova para arquivos próprios se já existirem) ---
-public interface ICatalogService { }
-public class CatalogService : ICatalogService 
-{ 
-    public CatalogService(HttpClient client) { } 
-}
