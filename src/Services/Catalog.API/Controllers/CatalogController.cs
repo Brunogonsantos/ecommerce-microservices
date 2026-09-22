@@ -26,7 +26,7 @@ namespace Catalog.API.Controllers
             return Ok(products);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        [HttpGet("{id}", Name = "GetProduct")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
         public async Task<ActionResult<Product>> GetProductById(string id)
