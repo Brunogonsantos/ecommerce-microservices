@@ -1,4 +1,4 @@
-﻿services:
+services:
 
   # ---------- Infraestrutura ----------
 
@@ -42,6 +42,11 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__CatalogConn=Server=sqlserver,1433;Database=CatalogDb;User=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      # Precisa ser IDÊNTICO ao Jwt__Key/Issuer/Audience do apigateway, senão
+      # os tokens emitidos no login são rejeitados aqui.
+      - Jwt__Key=DevOnly_ChaveSecreta_TrocarEmProducao_2026!!
+      - Jwt__Issuer=ecommerce-microservices
+      - Jwt__Audience=ecommerce-microservices-clients
     depends_on:
       - sqlserver
 
@@ -92,6 +97,10 @@
       - ReverseProxy__Clusters__catalog-cluster__Destinations__destination1__Address=http://catalog-api:8080
       - ReverseProxy__Clusters__basket-cluster__Destinations__destination1__Address=http://basket-api:8080
       - ReverseProxy__Clusters__ordering-cluster__Destinations__destination1__Address=http://ordering-api:8080
+      # Precisa ser IDÊNTICO ao Jwt__Key/Issuer/Audience do catalog-api.
+      - Jwt__Key=DevOnly_ChaveSecreta_TrocarEmProducao_2026!!
+      - Jwt__Issuer=ecommerce-microservices
+      - Jwt__Audience=ecommerce-microservices-clients
     depends_on:
       - catalog-api
       - basket-api

@@ -1,5 +1,6 @@
 using Catalog.API.Data;
 using Catalog.API.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,8 +41,14 @@ namespace Catalog.API.Controllers
             return Ok(product);
         }
 
+        // Só usuários autenticados com o papel Admin podem criar produto.
+        // Antes dessa correção, qualquer requisição anônima conseguia criar
+        // produtos no catálogo.
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
         {
             _context.Products.Add(product);
