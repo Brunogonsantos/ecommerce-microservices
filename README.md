@@ -1,3 +1,5 @@
+[![CI](https://github.com/Brunogonsantos/ecommerce-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/Brunogonsantos/ecommerce-microservices/actions/workflows/ci.yml)
+
 # 🛒 Microservices E-Commerce Architecture (.NET 9)
 
 Um projeto completo de arquitetura de microsserviços desenvolvido com **.NET 9**, **Docker**, **SQL Server 2022**, **Redis**, **RabbitMQ (MassTransit)** e **YARP API Gateway**. 
