@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      # Não existe arquivo .sln no repositório, então cada serviço é compilado
+      # individualmente. Isso garante que Catalog.API, Ordering.API e ApiGateway
+      # (que os testes de unidade não referenciam) também sejam validados.
+      - name: Build Catalog.API
+        run: dotnet build src/Services/Catalog.API/Catalog.API.csproj -c Release
+
+      - name: Build Basket.API
+        run: dotnet build src/Services/Basket.API/Basket.API.csproj -c Release
+
+      - name: Build Ordering.API
+        run: dotnet build src/Services/Ordering/Ordering.API/Ordering.API.csproj -c Release
+
+      - name: Build ApiGateway
+        run: dotnet build src/Services/Gateway/ApiGateway/ApiGateway.csproj -c Release
+
+      - name: Testes de unidade - Ordering
+        run: dotnet test tests/Ordering.UnitTests/Ordering.UnitTests.csproj -c Release --logger "trx;LogFileName=ordering.trx"
+
+      - name: Testes de unidade - Basket
+        run: dotnet test tests/Basket.UnitTests/Basket.UnitTests.csproj -c Release --logger "trx;LogFileName=basket.trx"
+
+      - name: Publicar resultados dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-testes
+          path: "**/TestResults/*.trx"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Só constrói as imagens (não sobe os containers): valida que os
+      # Dockerfiles e os caminhos do docker-compose.yml estão corretos.
+      - name: Build das imagens
+        run: docker compose build
