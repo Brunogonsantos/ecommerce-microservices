@@ -1,4 +1,8 @@
-# 🛒 Microservices E-Commerce ArchitectureProjeto de estudo de arquitetura de microsserviços com **.NET 9**, **SQL Server 2022**, **Redis**, **RabbitMQ (MassTransit)**, **YARP** e **Docker Compose**. O foco não é só dividir em serviços, e sim tratar os problemas que aparecem quando eles conversam entre si: mensagens reentregues, dependências fora do ar, banco ainda subindo e dados que o cliente não deve controlar.
+# 🛒 E-Commerce Microservices (.NET 9)
+
+
+
+Projeto de estudo de arquitetura de microsserviços com **.NET 9**, **SQL Server 2022**, **Redis**, **RabbitMQ (MassTransit)**, **YARP** e **Docker Compose**. O foco não é só dividir em serviços, e sim tratar os problemas que aparecem quando eles conversam entre si: mensagens reentregues, dependências fora do ar, banco ainda subindo e dados que o cliente não deve controlar.
 
 ---
 
