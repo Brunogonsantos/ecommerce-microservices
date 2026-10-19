@@ -44,6 +44,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.ServiceUnavailable)]
         public async Task<ActionResult<ShoppingCart>> UpdateBasket([FromBody] ShoppingCart basket)
         {
+            // O id de checkout pendente é controlado só pelo servidor. Qualquer valor
+            // enviado pelo cliente é descartado, e alterar o carrinho invalida uma
+            // tentativa de checkout anterior (os itens/valores podem ter mudado).
+            basket.PendingCheckoutId = null;
+
             // Valida cada item contra o Catalog.API antes de gravar o carrinho.
             // Importante: o preço final vem do catálogo, não do que o cliente
             // enviou no corpo da requisição — sem isso, qualquer um poderia
@@ -92,7 +97,7 @@ namespace Basket.API.Controllers
             return Ok();
         }
 
-        // --- NOVO ENDPOINT DE CHECKOUT VIA RABBITMQ ---
+        // --- ENDPOINT DE CHECKOUT VIA RABBITMQ ---
         [HttpPost]
         [Route("[action]")]
         [ProducesResponseType((int)HttpStatusCode.Accepted)]
@@ -106,10 +111,21 @@ namespace Basket.API.Controllers
                 return NotFound();
             }
 
-            // 2. Cria o evento e mapeia os dados do checkout com o total do carrinho
+            // 2. Garante um CheckoutId estável para este carrinho e o GRAVA antes de
+            //    publicar. Se o processo cair depois do Publish e antes do
+            //    DeleteBasket, o carrinho continua no Redis com o mesmo id, e repetir
+            //    o checkout reaproveita esse id em vez de gerar um novo. O
+            //    Ordering.API descarta a repetição (consumer + índice único).
+            if (basket.PendingCheckoutId is null)
+            {
+                basket.PendingCheckoutId = Guid.NewGuid();
+                await _repository.UpdateBasket(basket);
+            }
+
+            // 3. Cria o evento e mapeia os dados do checkout com o total do carrinho
             var eventMessage = new BasketCheckoutEvent
             {
-                CheckoutId = Guid.NewGuid(),
+                CheckoutId = basket.PendingCheckoutId.Value,
                 UserName = basketCheckout.UserName,
                 TotalPrice = basket.TotalPrice,
                 FirstName = basketCheckout.FirstName,
@@ -121,10 +137,10 @@ namespace Basket.API.Controllers
                 ZipCode = basketCheckout.ZipCode
             };
 
-            // 3. Publica o evento no RabbitMQ
+            // 4. Publica o evento no RabbitMQ
             await _publishEndpoint.Publish<BasketCheckoutEvent>(eventMessage);
 
-            // 4. Remove o carrinho após o checkout bem-sucedido
+            // 5. Remove o carrinho após o checkout bem-sucedido
             await _repository.DeleteBasket(basketCheckout.UserName);
 
             return Accepted(eventMessage);

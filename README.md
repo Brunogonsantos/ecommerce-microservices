@@ -1,6 +1,6 @@
 # 🛒 E-Commerce Microservices (.NET 9)
 
-
+[![CI](https://github.com/Brunogonsantos/ecommerce-microservices/actions/workflows/ci.yml/badge.svg)](https://github.com/Brunogonsantos/ecommerce-microservices/actions/workflows/ci.yml)
 
 Projeto de estudo de arquitetura de microsserviços com **.NET 9**, **SQL Server 2022**, **Redis**, **RabbitMQ (MassTransit)**, **YARP** e **Docker Compose**. O foco não é só dividir em serviços, e sim tratar os problemas que aparecem quando eles conversam entre si: mensagens reentregues, dependências fora do ar, banco ainda subindo e dados que o cliente não deve controlar.
 
@@ -90,7 +90,7 @@ Authorization: Bearer <token>
 ## 🔄 Fluxo de checkout
 
 1. `POST /api/v1/Basket` grava o carrinho no Redis. Antes de salvar, o Basket.API consulta cada produto no Catalog.API e **usa o nome e o preço do catálogo**, ignorando o que o cliente enviou. Produto inexistente retorna `400`.
-2. `POST /api/v1/Basket/Checkout` gera um `CheckoutId` único, publica o `BasketCheckoutEvent` no RabbitMQ e apaga o carrinho.
+2. `POST /api/v1/Basket/Checkout` grava no carrinho (Redis) um `CheckoutId` estável, publica o `BasketCheckoutEvent` no RabbitMQ e só então apaga o carrinho. Se o checkout for repetido depois de uma falha, o mesmo `CheckoutId` é reaproveitado.
 3. O Ordering.API consome o evento e cria o pedido, **uma única vez por `CheckoutId`**.
 
 ---
@@ -102,6 +102,7 @@ Authorization: Bearer <token>
 | SQL Server ainda subindo | Catalog.API e Ordering.API repetem a criação do banco com backoff exponencial (Polly, 5 tentativas) |
 | Catalog.API instável ou fora do ar | Basket.API usa HttpClient com retry e circuit breaker (Polly); com o circuito aberto ou o catálogo inacessível, responde `503` em vez de aceitar um preço não verificado |
 | Mensagem reentregue pelo broker | O MassTransit tenta reentregar até 3 vezes. O consumer consulta o `CheckoutId` antes de criar o pedido e há um **índice único** em `Order.CheckoutId` como garantia final; uma violação do índice é tratada como no-op |
+| Evento publicado, mas o carrinho não foi apagado (queda do processo, Redis fora do ar) | O `CheckoutId` fica gravado no carrinho **antes** do `Publish`; repetir o checkout reutiliza o mesmo id e o Ordering.API descarta a duplicata |
 | Cliente manipulando o preço | O preço sempre vem do catálogo |
 
 ---
@@ -113,7 +114,7 @@ dotnet test tests/Ordering.UnitTests/Ordering.UnitTests.csproj
 dotnet test tests/Basket.UnitTests/Basket.UnitTests.csproj
 ```
 
-- **14 testes de unidade** (xUnit + Moq + EF Core InMemory): consumer idempotente, mapeamento do evento, validação de preço/produto no carrinho, respostas `400`/`503`, geração do `CheckoutId`.
+- **18 testes de unidade** (xUnit + Moq + EF Core InMemory): consumer idempotente, mapeamento do evento, validação de preço/produto no carrinho, respostas `400`/`503`, `CheckoutId` gravado antes do `Publish` e reaproveitado em checkout repetido.
 - **GitHub Actions** (`.github/workflows/ci.yml`): compila os quatro serviços, roda os testes e executa `docker compose build` a cada push e pull request.
 
 ---
@@ -122,8 +123,9 @@ dotnet test tests/Basket.UnitTests/Basket.UnitTests.csproj
 
 Esta seção lista o que **não** está resolvido, de forma intencional.
 
-- **Sem Transactional Outbox.** O checkout publica o evento e depois apaga o carrinho. Se o broker falhar no meio do caminho, o evento pode se perder.
-- **Idempotência só no nível da mensageria.** Dois cliques do usuário geram dois `CheckoutId` diferentes e, portanto, dois pedidos.
+- **Sem Transactional Outbox.** O estado do checkout fica no Redis, que não participa de transação com o RabbitMQ, então o padrão não se aplica diretamente. A consistência vem do `CheckoutId` fixo por carrinho somado ao consumer idempotente. Um Outbox de verdade exigiria um banco SQL no Basket.API.
+- **Cliques realmente simultâneos ainda podem gerar dois pedidos.** O `CheckoutId` é gravado com leitura seguida de escrita via `IDistributedCache`, sem operação atômica. Repetições sequenciais são protegidas; duas requisições concorrentes podem gerar ids diferentes.
+- **Alterar o carrinho invalida o id pendente.** Se o checkout já foi publicado, mas o carrinho não foi apagado, e o usuário muda os itens, o próximo checkout recebe um id novo.
 - **Sem controle de estoque.** Nada impede vender acima do disponível.
 - **Só o Catalog.API valida o JWT.** Os endpoints do Basket.API e do Ordering.API ainda são abertos.
 - **Sem observabilidade.** Não há tracing distribuído nem logs centralizados.
