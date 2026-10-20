@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Polly.CircuitBreaker;
+using System.Security.Claims;
 using Xunit;
 
 namespace Basket.UnitTests
@@ -27,6 +28,21 @@ namespace Basket.UnitTests
                 _publishEndpointMock.Object,
                 _catalogServiceMock.Object,
                 Mock.Of<ILogger<BasketController>>());
+
+            // Por padrão, quem chama é o cliente "usuario-teste" (papel Customer).
+            DefinirUsuario("usuario-teste", "Customer");
+        }
+
+        private void DefinirUsuario(string nome, string papel)
+        {
+            var identidade = new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Name, nome), new Claim(ClaimTypes.Role, papel) },
+                authenticationType: "teste");
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identidade) }
+            };
         }
 
         private static ShoppingCart BuildCarrinhoComUmItem(string productId, decimal precoEnviadoPeloCliente)
@@ -47,6 +63,73 @@ namespace Basket.UnitTests
             var carrinho = new ShoppingCart("usuario-teste");
             carrinho.Items.Add(new ShoppingCartItem { ProductId = "p1", ProductName = "Produto", Price = 50m, Quantity = 2 });
             return carrinho;
+        }
+
+        // ---------- Controle de acesso ----------
+
+        [Fact]
+        public async Task GetBasket_QuandoOUsuarioPedeOProprioCarrinho_RetornaOk()
+        {
+            _repositoryMock.Setup(r => r.GetBasket("usuario-teste")).ReturnsAsync(new ShoppingCart("usuario-teste"));
+
+            var resultado = await _controller.GetBasket("usuario-teste");
+
+            Assert.IsType<OkObjectResult>(resultado.Result);
+        }
+
+        [Fact]
+        public async Task GetBasket_QuandoClientePedeCarrinhoDeOutroUsuario_RetornaForbid()
+        {
+            var resultado = await _controller.GetBasket("outra-pessoa");
+
+            Assert.IsType<ForbidResult>(resultado.Result);
+            _repositoryMock.Verify(r => r.GetBasket(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetBasket_QuandoAdminPedeCarrinhoDeOutroUsuario_RetornaOk()
+        {
+            DefinirUsuario("admin", "Admin");
+            _repositoryMock.Setup(r => r.GetBasket("outra-pessoa")).ReturnsAsync(new ShoppingCart("outra-pessoa"));
+
+            var resultado = await _controller.GetBasket("outra-pessoa");
+
+            Assert.IsType<OkObjectResult>(resultado.Result);
+        }
+
+        [Fact]
+        public async Task UpdateBasket_QuandoClienteEnviaCarrinhoDeOutroUsuario_RetornaForbid_SemConsultarOCatalogo()
+        {
+            var carrinho = BuildCarrinhoComUmItem("p1", 10m);
+            carrinho.UserName = "outra-pessoa";
+
+            var resultado = await _controller.UpdateBasket(carrinho);
+
+            Assert.IsType<ForbidResult>(resultado.Result);
+            _catalogServiceMock.Verify(
+                s => s.GetProductAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            _repositoryMock.Verify(r => r.UpdateBasket(It.IsAny<ShoppingCart>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteBasket_QuandoClienteApagaCarrinhoDeOutroUsuario_RetornaForbid()
+        {
+            var resultado = await _controller.DeleteBasket("outra-pessoa");
+
+            Assert.IsType<ForbidResult>(resultado);
+            _repositoryMock.Verify(r => r.DeleteBasket(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Checkout_QuandoClienteUsaUserNameDeOutroUsuario_RetornaForbid_SemPublicar()
+        {
+            var resultado = await _controller.Checkout(new BasketCheckout { UserName = "outra-pessoa" });
+
+            Assert.IsType<ForbidResult>(resultado);
+            _publishEndpointMock.Verify(
+                p => p.Publish(It.IsAny<BasketCheckoutEvent>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+            _repositoryMock.Verify(r => r.GetBasket(It.IsAny<string>()), Times.Never);
         }
 
         // ---------- UpdateBasket ----------
@@ -149,9 +232,9 @@ namespace Basket.UnitTests
         [Fact]
         public async Task Checkout_QuandoCarrinhoNaoExiste_RetornaNotFound()
         {
-            _repositoryMock.Setup(r => r.GetBasket("inexistente")).ReturnsAsync((ShoppingCart?)null);
+            _repositoryMock.Setup(r => r.GetBasket("usuario-teste")).ReturnsAsync((ShoppingCart?)null);
 
-            var resultado = await _controller.Checkout(new BasketCheckout { UserName = "inexistente" });
+            var resultado = await _controller.Checkout(new BasketCheckout { UserName = "usuario-teste" });
 
             Assert.IsType<NotFoundResult>(resultado);
             _publishEndpointMock.Verify(

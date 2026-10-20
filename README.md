@@ -59,7 +59,7 @@ Para zerar tudo, inclusive os bancos: `docker compose down -v`.
 
 ## 🔐 Autenticação e autorização
 
-O Gateway emite um JWT (HMAC-SHA256, 60 min) e o **Catalog.API** valida o token.
+O Gateway emite um JWT (HMAC-SHA256, 60 min) e o **Catalog.API**, o **Basket.API** e o **Ordering.API** validam o token, com a mesma chave configurada nos quatro serviços.
 
 | Usuário | Senha | Papel |
 |---|---|---|
@@ -82,6 +82,12 @@ Authorization: Bearer <token>
 | Mesmo `POST` com token de `cliente` | `403` |
 | Mesmo `POST` com token de `admin` | `201` |
 | `GET /api/v1/Catalog` (listar/consultar) | público |
+| Qualquer endpoint do Basket.API ou do Ordering.API sem token | `401` |
+| Ler, alterar ou apagar o carrinho (ou ver os pedidos) de **outro usuário** com token de `cliente` | `403` |
+| Os mesmos acessos com token de `admin` | permitidos |
+| `cliente` acessando o próprio carrinho e os próprios pedidos | permitido |
+
+No Basket.API e no Ordering.API a regra é por dono do recurso: o `userName` da rota ou do corpo precisa ser o do token (o papel `Admin` é exceção).
 
 > ⚠️ Os usuários são uma lista fixa em memória (com senha em hash), criada só para demonstrar o fluxo. A chave do JWT está no `docker-compose.yml`. Nada disso serve para produção: seria necessário um cadastro de usuários persistido e a chave em um cofre de segredos.
 
@@ -114,7 +120,7 @@ dotnet test tests/Ordering.UnitTests/Ordering.UnitTests.csproj
 dotnet test tests/Basket.UnitTests/Basket.UnitTests.csproj
 ```
 
-- **18 testes de unidade** (xUnit + Moq + EF Core InMemory): consumer idempotente, mapeamento do evento, validação de preço/produto no carrinho, respostas `400`/`503`, `CheckoutId` gravado antes do `Publish` e reaproveitado em checkout repetido.
+- **28 testes de unidade** (xUnit + Moq + EF Core InMemory): consumer idempotente, mapeamento do evento, validação de preço/produto no carrinho, respostas `400`/`503`, `CheckoutId` gravado antes do `Publish` e reaproveitado em checkout repetido, e controle de acesso por dono do recurso no Basket e no Ordering (`403` para dados de outro usuário).
 - **GitHub Actions** (`.github/workflows/ci.yml`): compila os quatro serviços, roda os testes e executa `docker compose build` a cada push e pull request.
 
 ---
@@ -131,7 +137,7 @@ powershell -ExecutionPolicy Bypass -File scripts\testar-checkout-e2e.ps1
 | Script | O que comprova |
 |---|---|
 | `testar-auth-via-gateway.ps1` | Sem token → `401`; `admin` → `201`; `cliente` → `403`; token adulterado → `401`; `GET` público → `200`. O header `Authorization` atravessa o proxy |
-| `testar-checkout-e2e.ps1` | O preço do carrinho vem do catálogo; o `CheckoutId` sai do Basket e chega ao pedido; o pedido é criado **uma única vez** com o total correto; o carrinho é apagado; e uma reentrega simulada da mesma mensagem no RabbitMQ não gera segundo pedido |
+| `testar-checkout-e2e.ps1` | O preço do carrinho vem do catálogo; o `CheckoutId` sai do Basket e chega ao pedido; o pedido é criado **uma única vez** com o total correto; o carrinho é apagado; uma reentrega simulada da mesma mensagem no RabbitMQ não gera segundo pedido; e o Basket e o Ordering exigem token e barram o acesso a dados de outro usuário |
 
 A reentrega simulada publica um envelope do MassTransit pela API de gerenciamento do RabbitMQ. Para confirmar que o consumer descartou a duplicata (e não que a mensagem foi parar numa fila de erro), procure no log:
 
@@ -151,7 +157,6 @@ Esta seção lista o que **não** está resolvido, de forma intencional.
 - **Cliques realmente simultâneos ainda podem gerar dois pedidos.** O `CheckoutId` é gravado com leitura seguida de escrita via `IDistributedCache`, sem operação atômica. Repetições sequenciais são protegidas; duas requisições concorrentes podem gerar ids diferentes.
 - **Alterar o carrinho invalida o id pendente.** Se o checkout já foi publicado, mas o carrinho não foi apagado, e o usuário muda os itens, o próximo checkout recebe um id novo.
 - **Sem controle de estoque.** Nada impede vender acima do disponível.
-- **Só o Catalog.API valida o JWT.** Os endpoints do Basket.API e do Ordering.API ainda são abertos.
 - **Sem observabilidade.** Não há tracing distribuído nem logs centralizados.
 - **Schema com `EnsureCreated()`.** Não há migrations; mudar o modelo exige recriar o banco.
 - **`depends_on` sem healthcheck.** A ordem de subida é compensada por retry no código, não pelo Compose.

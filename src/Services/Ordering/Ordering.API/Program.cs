@@ -1,4 +1,6 @@
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Ordering.Application.Contracts;
 using Ordering.Application.Features.Orders.Consumers;
 using Ordering.Infrastructure.Data;
@@ -6,6 +8,7 @@ using Ordering.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient; 
 using Polly;                     
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,28 @@ builder.Services.AddMassTransit(config =>
     });
 });
 
+// Autenticação JWT: a MESMA chave/issuer/audience do Gateway (que emite o token),
+// do Catalog.API e do Basket.API.
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "DevOnly_ChaveSecreta_TrocarEmProducao_2026!!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "ecommerce-microservices";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ecommerce-microservices-clients";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
@@ -47,6 +72,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

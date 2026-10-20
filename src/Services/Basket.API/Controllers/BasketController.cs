@@ -1,14 +1,19 @@
 using Basket.API.Entities;
 using Basket.API.Repositories;
+using Basket.API.Security;
 using Basket.API.Services;
 using EventBus.Messages.Events;
 using MassTransit; // <--- Importante
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Polly.CircuitBreaker;
 using System.Net;
 
 namespace Basket.API.Controllers
 {
+    // Todos os endpoints exigem token. Além disso, cada um confere se o userName
+    // pedido é do próprio usuário autenticado (ou se ele é Admin).
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class BasketController : ControllerBase
@@ -34,6 +39,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType(typeof(ShoppingCart), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ShoppingCart>> GetBasket(string userName)
         {
+            if (!User.CanAccess(userName))
+            {
+                return Forbid();
+            }
+
             var basket = await _repository.GetBasket(userName);
             return Ok(basket ?? new ShoppingCart(userName));
         }
@@ -44,6 +54,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.ServiceUnavailable)]
         public async Task<ActionResult<ShoppingCart>> UpdateBasket([FromBody] ShoppingCart basket)
         {
+            if (!User.CanAccess(basket.UserName))
+            {
+                return Forbid();
+            }
+
             // O id de checkout pendente é controlado só pelo servidor. Qualquer valor
             // enviado pelo cliente é descartado, e alterar o carrinho invalida uma
             // tentativa de checkout anterior (os itens/valores podem ter mudado).
@@ -93,6 +108,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> DeleteBasket(string userName)
         {
+            if (!User.CanAccess(userName))
+            {
+                return Forbid();
+            }
+
             await _repository.DeleteBasket(userName);
             return Ok();
         }
@@ -104,6 +124,11 @@ namespace Basket.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Checkout([FromBody] BasketCheckout basketCheckout)
         {
+            if (!User.CanAccess(basketCheckout.UserName))
+            {
+                return Forbid();
+            }
+
             // 1. Busca o carrinho existente do usuário
             var basket = await _repository.GetBasket(basketCheckout.UserName);
             if (basket == null)

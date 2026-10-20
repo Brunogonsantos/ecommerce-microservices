@@ -1,9 +1,12 @@
 using Basket.API.Repositories;
 using Basket.API.Services;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Polly;
 using Polly.Extensions.Http;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,28 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 // --- Registro do Repositório do Carrinho ---
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+
+// --- Autenticação JWT ---
+// A MESMA chave/issuer/audience do Gateway (que emite o token) e do Catalog.API.
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "DevOnly_ChaveSecreta_TrocarEmProducao_2026!!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "ecommerce-microservices";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ecommerce-microservices-clients";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+builder.Services.AddAuthorization();
 
 // --- Configuração do MassTransit com RabbitMQ ---
 builder.Services.AddMassTransit(config =>
@@ -59,6 +84,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(); // Ativa a interface visual do Scalar em /scalar
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

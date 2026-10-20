@@ -62,6 +62,10 @@ services:
       - ConnectionStrings__Redis=redis:6379
       - EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672
       - ApiSettings__CatalogUrl=http://catalog-api:8080
+      # Precisa ser IDÊNTICO ao Jwt__* do apigateway e do catalog-api.
+      - Jwt__Key=DevOnly_ChaveSecreta_TrocarEmProducao_2026!!
+      - Jwt__Issuer=ecommerce-microservices
+      - Jwt__Audience=ecommerce-microservices-clients
     depends_on:
       - redis
       - rabbitmq
@@ -78,6 +82,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__OrderingConn=Server=sqlserver,1433;Database=OrderingDb;User=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
       - EventBusSettings__HostAddress=amqp://guest:guest@rabbitmq:5672
+      # Precisa ser IDÊNTICO ao Jwt__* do apigateway e do catalog-api.
+      - Jwt__Key=DevOnly_ChaveSecreta_TrocarEmProducao_2026!!
+      - Jwt__Issuer=ecommerce-microservices
+      - Jwt__Audience=ecommerce-microservices-clients
     depends_on:
       - sqlserver
       - rabbitmq

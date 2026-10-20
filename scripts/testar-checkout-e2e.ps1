@@ -1,6 +1,9 @@
 ﻿# Teste ponta a ponta do checkout, sempre passando pelo Gateway (5094).
 # Requer a stack no ar: docker compose up -d --build
 #
+# Basket e Ordering exigem token: o fluxo usa o admin (que pode agir em nome de
+# qualquer usuário) e, no fim, confere que um cliente comum é barrado (401/403).
+#
 # Cobre: preço vindo do catálogo, CheckoutId gravado, pedido criado UMA vez,
 # carrinho apagado e (opcional) reentrega simulada da mesma mensagem no RabbitMQ.
 
@@ -20,12 +23,13 @@ function Get-Status($e) { if ($e.Exception.Response) { [int]$e.Exception.Respons
 
 $script:falhas = 0
 $script:ultimoJson = ""
+$script:authHeaders = @{}
 
 # Lê os pedidos e SEMPRE devolve um array de verdade (0, 1 ou N itens).
 # Evita a armadilha do PowerShell 5.1, em que @(Invoke-RestMethod ...) pode
 # devolver um array vazio aninhado e fazer "Count -eq 1" dar verdadeiro sem pedido.
 function Get-Orders($user) {
-    $resp = Invoke-WebRequest -UseBasicParsing -Uri "$orders/$user" -Method Get
+    $resp = Invoke-WebRequest -UseBasicParsing -Uri "$orders/$user" -Method Get -Headers $script:authHeaders
     $script:ultimoJson = $resp.Content
     $parsed = $resp.Content | ConvertFrom-Json
     $itens = @(@($parsed) | Where-Object { $null -ne $_ })
@@ -37,6 +41,7 @@ $usuario = "e2e-$(Get-Random -Maximum 999999)"
 Write-Section "1. Login e criação do produto"
 $login = Invoke-RestMethod -Uri "$gateway/api/v1/Auth/login" -Method Post -ContentType "application/json" `
     -Body (@{ userName = "admin"; password = "Admin@123" } | ConvertTo-Json)
+$script:authHeaders = @{ Authorization = "Bearer $($login.token)" }
 $produto = Invoke-RestMethod -Uri $catalog -Method Post -ContentType "application/json" `
     -Headers @{ Authorization = "Bearer $($login.token)" } `
     -Body (@{ name = "Produto E2E"; category = "Teste"; description = "e2e"; imageFile = ""; price = 800 } | ConvertTo-Json)
@@ -44,7 +49,7 @@ Write-Host "Produto $($produto.id) criado com preço $($produto.price)"
 
 # 2. Carrinho com preço adulterado
 Write-Section "2. Montando o carrinho (cliente tenta mandar preço 1)"
-$carrinho = Invoke-RestMethod -Uri $basket -Method Post -ContentType "application/json" -Body (@{
+$carrinho = Invoke-RestMethod -Uri $basket -Method Post -ContentType "application/json" -Headers $script:authHeaders -Body (@{
     userName = $usuario
     items    = @(@{ productId = $produto.id; productName = "x"; price = 1; quantity = 2; color = "preto" })
 } | ConvertTo-Json -Depth 5)
@@ -55,7 +60,7 @@ else { Fail "carrinho novo já veio com pendingCheckoutId." }
 
 # 3. Checkout
 Write-Section "3. Checkout (esperado: 202 e um CheckoutId)"
-$evento = Invoke-RestMethod -Uri "$basket/Checkout" -Method Post -ContentType "application/json" -Body (@{
+$evento = Invoke-RestMethod -Uri "$basket/Checkout" -Method Post -ContentType "application/json" -Headers $script:authHeaders -Body (@{
     userName = $usuario; firstName = "Teste"; lastName = "E2E"; emailAddress = "e2e@teste.com"
     addressLine = "Rua Teste, 1"; country = "Brasil"; state = "RS"; zipCode = "90000-000"
 } | ConvertTo-Json)
@@ -81,7 +86,7 @@ elseif ($lista.Count -ge 1) { Fail "total do pedido é $($lista[0].totalPrice), 
 
 # 5. Carrinho apagado
 Write-Section "5. Carrinho apagado após o checkout"
-$depois = Invoke-RestMethod -Uri "$basket/$usuario" -Method Get
+$depois = Invoke-RestMethod -Uri "$basket/$usuario" -Method Get -Headers $script:authHeaders
 if (@($depois.items).Count -eq 0) { Pass "carrinho vazio após o checkout." }
 else { Fail "carrinho ainda tem itens." }
 
@@ -115,6 +120,31 @@ try {
 } catch {
     Skip "não foi possível simular a reentrega: $($_.Exception.Message)"
 }
+
+# 7. Controle de acesso no Basket e no Ordering
+Write-Section "7. Controle de acesso (JWT no Basket.API e no Ordering.API)"
+$cliente = Invoke-RestMethod -Uri "$gateway/api/v1/Auth/login" -Method Post -ContentType "application/json" `
+    -Body (@{ userName = "cliente"; password = "Cliente@123" } | ConvertTo-Json)
+$hCliente = @{ Authorization = "Bearer $($cliente.token)" }
+
+function Testar-Acesso($descricao, $uri, $headers, $esperado) {
+    try {
+        Invoke-WebRequest -UseBasicParsing -Uri $uri -Method Get -Headers $headers | Out-Null
+        $status = 200
+    } catch {
+        $status = Get-Status $_
+    }
+    if ($status -eq $esperado) { Pass "$descricao -> $status" }
+    else { Fail "$descricao -> $status (esperado $esperado)" }
+}
+
+Testar-Acesso "carrinho sem token"                    "$basket/$usuario"  @{}       401
+Testar-Acesso "pedidos sem token"                     "$orders/$usuario"  @{}       401
+Testar-Acesso "cliente lendo carrinho de outro"       "$basket/$usuario"  $hCliente 403
+Testar-Acesso "cliente lendo pedidos de outro"        "$orders/$usuario"  $hCliente 403
+Testar-Acesso "cliente lendo o PRÓPRIO carrinho"      "$basket/cliente"   $hCliente 200
+Testar-Acesso "cliente lendo os PRÓPRIOS pedidos"     "$orders/cliente"   $hCliente 200
+Testar-Acesso "admin lendo pedidos de outro usuário"  "$orders/$usuario"  $script:authHeaders 200
 
 Write-Host ""
 if ($script:falhas -eq 0) { Write-Host "Teste concluído sem falhas." -ForegroundColor Green }
