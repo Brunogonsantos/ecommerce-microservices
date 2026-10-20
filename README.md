@@ -72,7 +72,7 @@ POST http://localhost:5094/api/v1/Auth/login
 { "userName": "admin", "password": "Admin@123" }
 
 # 2. Criar produto (exige papel Admin)
-POST http://localhost:5070/api/v1/Catalog
+POST http://localhost:5094/catalog-api/api/v1/Catalog
 Authorization: Bearer <token>
 ```
 
@@ -119,6 +119,30 @@ dotnet test tests/Basket.UnitTests/Basket.UnitTests.csproj
 
 ---
 
+## ✅ Como validar o fluxo completo
+
+Com a stack no ar (`docker compose up -d --build`), dois scripts em PowerShell exercitam o sistema de ponta a ponta, **sempre passando pelo Gateway**:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\testar-auth-via-gateway.ps1
+powershell -ExecutionPolicy Bypass -File scripts\testar-checkout-e2e.ps1
+```
+
+| Script | O que comprova |
+|---|---|
+| `testar-auth-via-gateway.ps1` | Sem token → `401`; `admin` → `201`; `cliente` → `403`; token adulterado → `401`; `GET` público → `200`. O header `Authorization` atravessa o proxy |
+| `testar-checkout-e2e.ps1` | O preço do carrinho vem do catálogo; o `CheckoutId` sai do Basket e chega ao pedido; o pedido é criado **uma única vez** com o total correto; o carrinho é apagado; e uma reentrega simulada da mesma mensagem no RabbitMQ não gera segundo pedido |
+
+A reentrega simulada publica um envelope do MassTransit pela API de gerenciamento do RabbitMQ. Para confirmar que o consumer descartou a duplicata (e não que a mensagem foi parar numa fila de erro), procure no log:
+
+```powershell
+docker compose logs ordering-api | Select-String "duplicada"
+```
+
+Esses scripts são manuais e não rodam no CI, porque dependem da stack completa em execução.
+
+---
+
 ## 🚧 Limitações conhecidas
 
 Esta seção lista o que **não** está resolvido, de forma intencional.
@@ -131,7 +155,7 @@ Esta seção lista o que **não** está resolvido, de forma intencional.
 - **Sem observabilidade.** Não há tracing distribuído nem logs centralizados.
 - **Schema com `EnsureCreated()`.** Não há migrations; mudar o modelo exige recriar o banco.
 - **`depends_on` sem healthcheck.** A ordem de subida é compensada por retry no código, não pelo Compose.
-- **Testes de integração ausentes.** O teste de unidade só confirma que o índice único está declarado no modelo; a rejeição real de duplicatas pelo SQL Server não é exercitada automaticamente.
+- **Sem testes de integração automatizados.** Os scripts da seção anterior validam o fluxo, mas rodam à mão. O teste de unidade só confirma que o índice único está declarado no modelo; a rejeição de duplicatas pelo SQL Server (erro 2601/2627) não é exercitada no CI.
 
 ---
 
