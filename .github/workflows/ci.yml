@@ -18,9 +18,9 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      # Não existe arquivo .sln no repositório, então cada serviço é compilado
-      # individualmente. Isso garante que Catalog.API, Ordering.API e ApiGateway
-      # (que os testes de unidade não referenciam) também sejam validados.
+      # Cada serviço é compilado individualmente para que a falha aponte
+      # exatamente qual deles quebrou. Catalog.API, Ordering.API e ApiGateway
+      # não são referenciados pelos testes de unidade, então precisam deste passo.
       - name: Build Catalog.API
         run: dotnet build src/Services/Catalog.API/Catalog.API.csproj -c Release
 

@@ -12,13 +12,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+// A chave NÃO tem valor padrão no código: um padrão público permitiria forjar
+// tokens (inclusive de Admin) caso a configuração faltasse em algum ambiente.
+// Em Docker ela vem de Jwt__Key; em desenvolvimento local, do appsettings.Development.json.
+// A MESMA chave precisa estar configurada nos serviços que validam o token.
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || System.Text.Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key ausente ou curta demais (mínimo de 32 bytes). Defina a variável de ambiente Jwt__Key; " +
+        "em desenvolvimento local, ela vem do appsettings.Development.json.");
+}
+
 var jwtSettings = new JwtSettings
 {
-    // Fallback só para rodar localmente fora do Docker sem configurar nada.
-    // Em Docker, isso vem sempre sobrescrito pelas variáveis de ambiente
-    // Jwt__Key/Jwt__Issuer/Jwt__Audience (ver docker-compose.yml), e a MESMA
-    // chave precisa estar configurada no Catalog.API para a validação bater.
-    Key = builder.Configuration["Jwt:Key"] ?? "DevOnly_ChaveSecreta_TrocarEmProducao_2026!!",
+    Key = jwtKey,
     Issuer = builder.Configuration["Jwt:Issuer"] ?? "ecommerce-microservices",
     Audience = builder.Configuration["Jwt:Audience"] ?? "ecommerce-microservices-clients",
     ExpiryMinutes = int.TryParse(builder.Configuration["Jwt:ExpiryMinutes"], out var minutes) ? minutes : 60

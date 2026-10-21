@@ -89,7 +89,7 @@ Authorization: Bearer <token>
 
 No Basket.API e no Ordering.API a regra é por dono do recurso: o `userName` da rota ou do corpo precisa ser o do token (o papel `Admin` é exceção).
 
-> ⚠️ Os usuários são uma lista fixa em memória (com senha em hash), criada só para demonstrar o fluxo. A chave do JWT está no `docker-compose.yml`. Nada disso serve para produção: seria necessário um cadastro de usuários persistido e a chave em um cofre de segredos.
+> ⚠️ Os usuários são uma lista fixa em memória (com senha em hash), criada só para demonstrar o fluxo. A chave do JWT vem do `docker-compose.yml` (variável `Jwt__Key`) e é a mesma de desenvolvimento. Os serviços se recusam a iniciar sem uma chave de pelo menos 32 bytes; fora do Docker, ela vem do `appsettings.Development.json`. Nada disso serve para produção: seria necessário um cadastro de usuários persistido e a chave em um cofre de segredos. Os containers rodam sem root, mas ainda com `ASPNETCORE_ENVIRONMENT=Development` (Scalar e página de exceção ativos), e os serviços usam a conta `sa` do SQL Server, só aceitável em ambiente local.
 
 ---
 

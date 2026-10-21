@@ -15,7 +15,7 @@ namespace Basket.API.Repositories
 
         public async Task<ShoppingCart?> GetBasket(string userName)
         {
-            var basketjson = await _redisCache.GetStringAsync(userName);
+            var basketjson = await _redisCache.GetStringAsync(CacheKey(userName));
 
             if (string.IsNullOrEmpty(basketjson))
                 return null;
@@ -26,14 +26,17 @@ namespace Basket.API.Repositories
         public async Task<ShoppingCart> UpdateBasket(ShoppingCart basket)
         {
             // Serializa o objeto carrinho para JSON e salva no Redis usando o UserName como chave
-            await _redisCache.SetStringAsync(basket.UserName, JsonSerializer.Serialize(basket));
+            await _redisCache.SetStringAsync(CacheKey(basket.UserName), JsonSerializer.Serialize(basket));
 
             return await GetBasket(basket.UserName) ?? basket;
         }
 
         public async Task DeleteBasket(string userName)
         {
-            await _redisCache.RemoveAsync(userName);
+            await _redisCache.RemoveAsync(CacheKey(userName));
         }
+
+        // Prefixo para não misturar carrinhos com outras chaves que venham a usar o mesmo Redis.
+        private static string CacheKey(string userName) => $"basket:{userName}";
     }
 }

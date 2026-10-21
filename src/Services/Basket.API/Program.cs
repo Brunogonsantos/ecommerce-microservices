@@ -21,7 +21,16 @@ builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 
 // --- Autenticação JWT ---
 // A MESMA chave/issuer/audience do Gateway (que emite o token) e do Catalog.API.
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "DevOnly_ChaveSecreta_TrocarEmProducao_2026!!";
+// A chave NÃO tem valor padrão no código: um padrão público permitiria forjar
+// tokens (inclusive de Admin) caso a configuração faltasse em algum ambiente.
+// Em Docker ela vem de Jwt__Key; em desenvolvimento local, do appsettings.Development.json.
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key ausente ou curta demais (mínimo de 32 bytes). Defina a variável de ambiente Jwt__Key; " +
+        "em desenvolvimento local, ela vem do appsettings.Development.json.");
+}
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "ecommerce-microservices";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "ecommerce-microservices-clients";
 

@@ -23,4 +23,6 @@ RUN dotnet publish "Catalog.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# Roda sem root: o usuário "app" já existe nas imagens aspnet do .NET 8+.
+USER app
 ENTRYPOINT ["dotnet", "Catalog.API.dll"]

@@ -21,6 +21,35 @@ function Fail($m) { Write-Host "FALHOU: $m" -ForegroundColor Red; $script:falhas
 function Skip($m) { Write-Host "IGNORADO: $m" -ForegroundColor Yellow }
 function Get-Status($e) { if ($e.Exception.Response) { [int]$e.Exception.Response.StatusCode } else { -1 } }
 
+# Aguarda a stack responder. "docker compose up -d" volta assim que os containers
+# iniciam, mas Catalog e Ordering só começam a escutar depois de criar o banco
+# (com retry), o que pode levar quase um minuto. Qualquer status abaixo de 500
+# conta como "no ar" (um 401 de endpoint protegido, por exemplo).
+function Wait-ForStack {
+    $alvos = @(
+        @{ Nome = "Catalog (via Gateway)";  Uri = "$gateway/catalog-api/api/v1/Catalog" },
+        @{ Nome = "Basket (via Gateway)";   Uri = "$gateway/basket-api/api/v1/Basket/x" },
+        @{ Nome = "Ordering (via Gateway)"; Uri = "$gateway/ordering-api/api/v1/Order/x" }
+    )
+    $limite = (Get-Date).AddMinutes(3)
+    Write-Host "Aguardando a stack ficar pronta (até 3 min)..." -ForegroundColor Cyan
+    foreach ($alvo in $alvos) {
+        while ($true) {
+            try { Invoke-WebRequest -UseBasicParsing -Uri $alvo.Uri -Method Get | Out-Null; $status = 200 }
+            catch { $status = Get-Status $_ }
+            if ($status -ge 200 -and $status -lt 500) {
+                Write-Host "  $($alvo.Nome): pronto ($status)" -ForegroundColor Green
+                break
+            }
+            if ((Get-Date) -gt $limite) {
+                Write-Host "  $($alvo.Nome): sem resposta a tempo (último status $status). Veja: docker compose logs" -ForegroundColor Red
+                exit 1
+            }
+            Start-Sleep -Seconds 3
+        }
+    }
+}
+
 $script:falhas = 0
 $script:ultimoJson = ""
 $script:authHeaders = @{}
@@ -36,6 +65,8 @@ function Get-Orders($user) {
     return ,$itens
 }
 $usuario = "e2e-$(Get-Random -Maximum 999999)"
+
+Wait-ForStack
 
 # 1. Produto (exige admin)
 Write-Section "1. Login e criação do produto"
